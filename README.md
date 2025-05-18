@@ -85,9 +85,8 @@ Gradient Boosting (GB) usually gives state-of-the-art accuracy but is slower to 
 
 ✅ Staging is for testing new, better models before they replace production — so the best-performing one goes here.
 
-
-
-
+<br>
+<br>
 
 ✅ Production: Extra Trees (high stability & speed)
 Why?
