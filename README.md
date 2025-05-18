@@ -69,6 +69,8 @@ models were registered in the MLflow Model Registry:
 
 ✅ Production: (high stability & speed)
 
+![Registry Screenshot](lab1_1.png)
+
 ![Registry Screenshot](lab1.png)
 
 ---
