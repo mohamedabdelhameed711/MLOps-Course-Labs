@@ -73,6 +73,32 @@ models were registered in the MLflow Model Registry:
 
 ![Registry Screenshot](lab1.png)
 
+
+✅ Staging: Gradient Boosting (best F1 & AUC)
+Why?
+
+F1 score is important when you care about both precision and recall — useful in churn prediction to avoid missing customers likely to leave.
+
+ROC-AUC shows overall model discrimination capability — higher is better.
+
+Gradient Boosting (GB) usually gives state-of-the-art accuracy but is slower to train and serve.
+
+✅ Staging is for testing new, better models before they replace production — so the best-performing one goes here.
+
+
+✅ Production: Extra Trees (high stability & speed)
+Why?
+
+Extra Trees (ET) is an ensemble method like Random Forest but:
+
+Faster to train and serve than Gradient Boosting
+
+More stable in predictions due to full randomness in splitting
+
+Slightly lower performance than GB, but still good (high ROC-AUC, decent F1)
+
+✅ Production is for real-time use — so a model that’s fast, stable, and good enough is preferred.
+
 ---
 
 ```bash
