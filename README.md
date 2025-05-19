@@ -101,4 +101,19 @@ It provides an interactive interface to test the API.
 
 Basic test file is included (`test_api.py`).
 
+---
+
+## 📁 Directory Structure
+
+```bash
+    MLOps-Course-Labs/
+    ├── api/
+    │   ├── model.py          
+    │   └── app.py            
+    ├── tests/
+    │   └── test_api.py
+    ├── models/
+    │   ├── gb_best_model.py
+    │   └── gb_model.pkl        
+    ├── requirements.txt  
 ```
