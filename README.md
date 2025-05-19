@@ -127,6 +127,44 @@ Basic test file is included (`test_api.py`).
 
 ---
 
+## 🐳 Docker Support
+
+This project can be containerized using Docker to ensure consistent environments across different machines.
+
+### 📄 Dockerfile
+
+Make sure you have a `Dockerfile` in the root of your project like this:
+
+```Dockerfile
+FROM python:3.12-slim
+WORKDIR /app
+COPY . /app
+RUN pip install --no-cache-dir -r requirements.txt
+EXPOSE 8000
+CMD ["uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### ⚙️ Build the Docker Image
+```bash
+docker build -t myapi .
+```
+
+### ▶️ Run the Docker Container
+```bash
+docker run --name docker-myapi -p 8000:8000 myapi
+```
+
+### 🌍 Access the API
+
+Open [http://localhost:8000/docs](http://localhost:8000/docs) or use Postman as described above.
+
+### 🧾 View Logs from Running Container (Bonus)
+```bash
+docker logs docker-myapi
+```
+
+---
+
 ## 📁 Directory Structure
 
 ```bash
@@ -139,5 +177,6 @@ Basic test file is included (`test_api.py`).
     ├── models/
     │   ├── gb_best_model.py
     │   └── gb_model.pkl        
-    ├── requirements.txt  
+    ├── requirements.txt
+    ├── dockerfile  
 ```
