@@ -87,6 +87,30 @@ API will be live at: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 ---
 
+## 📬 Using Postman to Test `/predict`
+
+1. Open **Postman** and click **New > HTTP Request**.
+2. Set the request type to `POST`.
+3. Enter the URL:
+
+```
+http://127.0.0.1:8000/predict
+```
+
+4. Click on the **Body** tab, choose **raw**, and set format to **JSON**.
+5. Paste the sample JSON above.
+6. Click **Send**. You will get a response like:
+
+```json
+{
+  "predictions": [0]
+}
+```
+
+> `0` = Not likely to churn, `1` = Likely to churn
+
+---
+
 ## 📄 Swagger UI
 
 After running the API, go to:
