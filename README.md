@@ -1,7 +1,143 @@
-# MLOps Course Labs
+# 🚀 Model Serving – Bank Customer Churn Prediction
 
-Welcome to the lab repository for the [MLOps Course](https://github.com/Heba-Atef99/MLOps-Course).
+This directory contains the FastAPI application used to serve the best trained model (`GradientBoostingClassifier`) for **Bank Customer Churn Prediction**.
 
-Throughout this hands-on journey, you'll develop a **Bank Customer Churn Prediction** application—starting from the research phase and progressing through the full MLOps lifecycle, all the way to deployment.
+---
 
-> **Note:** Currently, the repository contains only the `research` branch. The remaining branches will be built step by step by the reader during the course days, as part of the learning experience.
+## 🛠️ Setup
+
+### Create & activate environment (if not already):
+
+```bash
+conda create -n churn_serving python=3.12 -y
+conda activate churn_serving
+```
+
+### Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+**Example `requirements.txt` should include:**
+
+```txt
+fastapi
+uvicorn
+scikit-learn
+pydantic
+pandas
+joblib
+```
+
+### Ensure model is saved in `models/gb_model.pkl`
+
+You can train & save it using the following Python code:
+
+```python
+from sklearn.ensemble import GradientBoostingClassifier
+import joblib
+
+# ... train your model as gb_model ...
+joblib.dump(gb_model, "models/gb_model.pkl")
+```
+
+---
+
+## 🚦 Run the API
+
+```bash
+uvicorn api.app:app --reload
+```
+
+API will be live at: [http://127.0.0.1:8000](http://127.0.0.1:8000)
+
+---
+
+## 🔗 Endpoints
+
+| Endpoint   | Method | Description                   |
+|------------|--------|-------------------------------|
+| `/`        | GET    | Welcome message               |
+| `/health`  | GET    | Check API health              |
+| `/predict` | POST   | Predict churn for customer(s) |
+
+---
+
+## 🧪 Sample JSON for `/predict`
+
+```json
+{
+  "data": [
+    {
+      "CreditScore": 720,
+      "Geography": "Germany",
+      "Gender": "Male",
+      "Age": 45,
+      "Tenure": 7,
+      "Balance": 150000.0,
+      "NumOfProducts": 1,
+      "HasCrCard": 0,
+      "IsActiveMember": 0,
+      "EstimatedSalary": 120000.0
+    }
+  ]
+}
+```
+
+---
+
+## 📬 Using Postman to Test `/predict`
+
+1. Open **Postman** and click **New > HTTP Request**.
+2. Set the request type to `POST`.
+3. Enter the URL:
+
+```
+http://127.0.0.1:8000/predict
+```
+
+4. Click on the **Body** tab, choose **raw**, and set format to **JSON**.
+5. Paste the sample JSON above.
+6. Click **Send**. You will get a response like:
+
+```json
+{
+  "predictions": [0]
+}
+```
+
+> `0` = Not likely to churn, `1` = Likely to churn
+
+---
+
+## 📄 Swagger UI
+
+After running the API, go to:
+
+📍 [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+
+It provides an interactive interface to test the API.
+
+---
+
+## ✅ Tests
+
+Basic test file is included (`test_api.py`).
+
+---
+
+## 📁 Directory Structure
+
+```bash
+    MLOps-Course-Labs/
+    ├── api/
+    │   ├── model.py          
+    │   └── app.py            
+    ├── tests/
+    │   └── test_api.py
+    ├── models/
+    │   ├── gb_best_model.py
+    │   └── gb_model.pkl        
+    ├── requirements.txt  
+```
