@@ -1,4 +1,4 @@
-# 🚀 Model Serving – Bank Customer Churn Prediction
+# 🚀 Bank Customer Churn Prediction
 
 This directory contains the FastAPI application used to serve the best trained model (`GradientBoostingClassifier`) for **Bank Customer Churn Prediction**.
 
