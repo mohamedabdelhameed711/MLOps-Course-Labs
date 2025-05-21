@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field, validator
 
 from api.model import load_model
+from prometheus_fastapi_instrumentator import Instrumentator
 
 # import hyperdx
 # hyperdx.init()  # set HYPERDX_API_KEY env var
@@ -23,6 +24,9 @@ app = FastAPI(
     description="Predict whether a customer will leave the bank.",
     version="0.1.0",
 )
+
+# Prometheus metrics
+Instrumentator().instrument(app).expose(app)
 
 
 # pydantic input schema 
