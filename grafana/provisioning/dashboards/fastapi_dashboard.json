@@ -1,0 +1,39 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": null,
+    "title": "FastAPI Metrics Dashboard",
+    "tags": ["fastapi", "prometheus"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "Request Duration (Latency)",
+        "targets": [
+          {
+            "expr": "http_request_duration_seconds_bucket",
+            "legendFormat": "{{le}}",
+            "refId": "A"
+          }
+        ],
+        "datasource": "Prometheus",
+        "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+      },
+      {
+        "type": "stat",
+        "title": "Total Requests",
+        "targets": [
+          {
+            "expr": "sum(http_requests_total)",
+            "refId": "B"
+          }
+        ],
+        "datasource": "Prometheus",
+        "gridPos": { "x": 0, "y": 8, "w": 6, "h": 4 }
+      }
+    ],
+    "schemaVersion": 30,
+    "version": 1
+  },
+  "overwrite": true
+}

@@ -1,26 +1,25 @@
-# 🚀 Bank Customer Churn Prediction
+# 🚀 Bank Customer Churn Prediction with Monitoring
 
-This directory contains the FastAPI application used to serve the best trained model (`GradientBoostingClassifier`) for **Bank Customer Churn Prediction**.
+This project provides a FastAPI application serving a `GradientBoostingClassifier` model for **Bank Customer Churn Prediction**. It features **Docker**, **Prometheus**, and **Grafana** integration for robust monitoring.
 
 ---
 
-## 🛠️ Setup
+## 🛠️ Local Setup
 
-### Create & activate environment (if not already):
+### 1. Create & Activate Environment
 
 ```bash
 conda create -n churn_serving python=3.12 -y
 conda activate churn_serving
 ```
 
-### Install dependencies:
+### 2. Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-**Example `requirements.txt` should include:**
-
+**requirements.txt includes:**
 ```txt
 fastapi
 uvicorn
@@ -28,39 +27,39 @@ scikit-learn
 pydantic
 pandas
 joblib
+prometheus-fastapi-instrumentator
 ```
 
-### Ensure model is saved in `models/gb_model.pkl`
+### 3. Train and Save the Model
 
-You can train & save it using the following Python code:
-
+Example:
 ```python
 from sklearn.ensemble import GradientBoostingClassifier
 import joblib
 
-# ... train your model as gb_model ...
+# ... your data loading and training code ...
 joblib.dump(gb_model, "models/gb_model.pkl")
 ```
 
 ---
 
-## 🚦 Run the API
+## 🚦 Run the API Locally
 
 ```bash
 uvicorn api.app:app --reload
 ```
-
-API will be live at: [http://127.0.0.1:8000](http://127.0.0.1:8000)
+- API root: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 ---
 
-## 🔗 Endpoints
+## 🔗 API Endpoints
 
-| Endpoint   | Method | Description                   |
-|------------|--------|-------------------------------|
-| `/`        | GET    | Welcome message               |
-| `/health`  | GET    | Check API health              |
-| `/predict` | POST   | Predict churn for customer(s) |
+| Endpoint   | Method | Description            |
+|------------|--------|------------------------|
+| `/`        | GET    | Welcome message        |
+| `/health`  | GET    | API health check       |
+| `/predict` | POST   | Churn prediction       |
+| `/metrics` | GET    | Prometheus metrics     |
 
 ---
 
@@ -87,55 +86,33 @@ API will be live at: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 
 ---
 
-## 📬 Using Postman to Test `/predict`
+## 📬 Using Postman
 
-1. Open **Postman** and click **New > HTTP Request**.
-2. Set the request type to `POST`.
-3. Enter the URL:
-
-```
-http://127.0.0.1:8000/predict
-```
-
-4. Click on the **Body** tab, choose **raw**, and set format to **JSON**.
-5. Paste the sample JSON above.
-6. Click **Send**. You will get a response like:
-
-```json
-{
-  "predictions": [0]
-}
-```
-
-> `0` = Not likely to churn, `1` = Likely to churn
+1. POST to `http://127.0.0.1:8000/predict`
+2. In **Body**, select `raw` and choose `JSON`.
+3. Paste the sample input and click **Send**.
 
 ---
 
 ## 📄 Swagger UI
 
-After running the API, go to:
-
-📍 [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-
-It provides an interactive interface to test the API.
+Interactive docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 ---
 
-## ✅ Tests
+## ✅ Running Tests
 
-Basic test file is included (`test_api.py`).
+```bash
+pytest tests/test_api.py
+```
 
 ---
 
-## 🐳 Docker Support
+## 🐳 Dockerized Deployment
 
-This project can be containerized using Docker to ensure consistent environments across different machines.
+### Dockerfile
 
-### 📄 Dockerfile
-
-Make sure you have a `Dockerfile` in the root of your project like this:
-
-```Dockerfile
+```dockerfile
 FROM python:3.12-slim
 WORKDIR /app
 COPY . /app
@@ -144,39 +121,105 @@ EXPOSE 8000
 CMD ["uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-### ⚙️ Build the Docker Image
+### Build & Run with Docker Compose
+
 ```bash
-docker build -t myapi .
-```
-
-### ▶️ Run the Docker Container
-```bash
-docker run --name docker-myapi -p 8000:8000 myapi
-```
-
-### 🌍 Access the API
-
-Open [http://localhost:8000/docs](http://localhost:8000/docs) or use Postman as described above.
-
-### 🧾 View Logs from Running Container (Bonus)
-```bash
-docker logs docker-myapi
+docker-compose up --build
 ```
 
 ---
 
-## 📁 Directory Structure
+## 📊 Monitoring with Prometheus & Grafana
+
+### docker-compose.yml Example
+
+```yaml
+version: '3.8'
+
+services:
+  fastapi:
+    build: .
+    container_name: fastapi_app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - prometheus
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+volumes:
+  grafana-storage:
+```
+
+### FastAPI Instrumentation
+
+Add to `api/app.py`:
+```python
+from prometheus_fastapi_instrumentator import Instrumentator
+
+Instrumentator().instrument(app).expose(app)
+```
+
+---
+
+## 📈 Grafana Dashboard Setup
+
+1. Go to [http://localhost:3000](http://localhost:3000)
+2. Login: `admin` / `admin`
+3. Add Prometheus datasource (URL: `http://prometheus:9090`)
+4. Create or import a dashboard (JSON).
+5. Useful metrics:
+   - Request duration: `http_request_duration_seconds_sum`
+   - Total requests: `http_requests_total`
+
+---
+
+## 📁 Project Structure
 
 ```bash
-    MLOps-Course-Labs/
-    ├── api/
-    │   ├── model.py          
-    │   └── app.py            
-    ├── tests/
-    │   └── test_api.py
-    ├── models/
-    │   ├── gb_best_model.py
-    │   └── gb_model.pkl        
-    ├── requirements.txt
-    ├── dockerfile  
+MLOps-Course-Labs/
+├── api/
+│   ├── model.py
+│   └── app.py
+├── grafana/
+│   └── provisioning/
+│       ├── dashboards/
+│       │   └── dashboard.json
+│       └── datasources/
+├── tests/
+│   └── test_api.py
+├── models/
+│   └── gb_model.pkl
+├── requirements.txt
+├── Dockerfile
+├── docker-compose.yml
+├── prometheus.yml
 ```
+
+---
+
+## 🧠 Why These Metrics?
+
+- **Request Duration**: Measures API performance and latency.
+- **Request Count**: Tracks API usage and helps detect overload.
+
+---
+
+**Tip:**  
+- Ensure `models/gb_model.pkl` exists before starting the API.
