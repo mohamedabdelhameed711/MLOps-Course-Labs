@@ -1,9 +1,7 @@
 version: '3.8'
-
 services:
   fastapi:
-    build: .
-    container_name: fastapi_app
+    image: churn-prediction:abdelhamid590  
     ports:
       - "8000:8000"
     depends_on:
@@ -11,7 +9,6 @@ services:
 
   prometheus:
     image: prom/prometheus
-    container_name: prometheus
     ports:
       - "9090:9090"
     volumes:
@@ -19,7 +16,6 @@ services:
 
   grafana:
     image: grafana/grafana
-    container_name: grafana
     ports:
       - "3000:3000"
     environment:
