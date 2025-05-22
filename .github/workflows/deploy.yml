@@ -74,39 +74,62 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ec2_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             set -e
 
-            # Remove any previous Docker
+            # Clean up any existing Docker repository files
+            sudo rm -f /etc/apt/sources.list.d/docker.list
+            sudo rm -f /etc/apt/keyrings/docker.gpg
+
+            # Remove any previous Docker installation
             sudo apt-get remove -y docker docker-engine docker.io containerd runc || true
+            
+            # Update package index
             sudo apt-get update -y
             sudo apt-get install -y ca-certificates curl gnupg lsb-release git
 
-            # Add Docker GPG key
+            # Create directory for keyrings
             sudo mkdir -p /etc/apt/keyrings
+
+            # Add Docker GPG key
             curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
               gpg --dearmor --batch --yes --no-tty | \
               sudo tee /etc/apt/keyrings/docker.gpg > /dev/null
 
-            # Add Docker's official APT repository
-            echo \
-              "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-              https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable" | \
+            # Set proper permissions for GPG key
+            sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+            # Add Docker's official APT repository (fixed formatting)
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | \
               sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
+            # Update package index again
             sudo apt-get update -y
+            
+            # Install Docker
             sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
+            # Enable and start Docker service
             sudo systemctl enable --now docker
-            sudo usermod -aG docker \$USER
+            
+            # Add current user to docker group
+            sudo usermod -aG docker $USER
+
+            # Install AWS CLI if not present
+            if ! command -v aws &> /dev/null; then
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip -q awscliv2.zip
+              sudo ./aws/install
+              rm -rf aws awscliv2.zip
+            fi
 
             # Clone or pull repo
             REPO_NAME=$(basename "${{ github.repository }}")
             mkdir -p ~/abdelhamid
             cd ~/abdelhamid
 
-            if [ ! -d "\$REPO_NAME/.git" ]; then
-              git clone https://github.com/${{ github.repository }} "\$REPO_NAME"
+            if [ ! -d "$REPO_NAME/.git" ]; then
+              git clone https://github.com/${{ github.repository }} "$REPO_NAME"
             fi
 
-            cd "\$REPO_NAME"
+            cd "$REPO_NAME"
             git pull
 
             # Login to ECR
@@ -116,7 +139,7 @@ jobs:
             # Update docker-compose.yml with ECR image
             sed -i "s|image:.*|image: $ECR_IMAGE|" docker-compose.yml
 
-            # Deploy
+            # Deploy with Docker Compose
             docker compose down --remove-orphans || true
             docker compose pull
             docker compose up -d
