@@ -80,7 +80,7 @@ jobs:
             docker pull ${{ steps.login-ecr.outputs.registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
             docker stop churn-prediction || true
             docker rm churn-prediction || true
-            docker run -d -p 80:8000 --name churn-prediction ${{ steps.login-ecr.outputs.registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+            docker run -d -p 443:8000 --name churn-prediction ${{ steps.login-ecr.outputs.registry }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
             
             mkdir -p hesham
             cd hesham
