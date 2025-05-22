@@ -3,7 +3,7 @@ services:
   fastapi:
     image: churn-prediction:abdelhamid590  
     ports:
-      - "8000:8000"
+      - "443:8000"   # change 443 to 8000 if localhost
     depends_on:
       - prometheus
 
