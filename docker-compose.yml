@@ -3,7 +3,7 @@ services:
   fastapi:
     image: churn-prediction:abdelhamid590  
     ports:
-      - "8000:8000"
+      - "443:443"
     depends_on:
       - prometheus
 
