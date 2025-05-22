@@ -252,5 +252,3 @@ MLOps-Course-Labs/
 
 ---
 
-**Tip:**  
-- Ensure `models/gb_model.pkl` exists before starting the API.
