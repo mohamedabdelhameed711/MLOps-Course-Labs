@@ -62,21 +62,52 @@ jobs:
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i ec2_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-            sudo apt update -y
-            sudo apt install -y git docker.io docker-compose
-            sudo service docker start || sudo systemctl start docker
-            sudo usermod -aG docker $USER
+            set -e
+
+            # Remove any previous Docker
+            sudo apt-get remove -y docker docker-engine docker.io containerd runc || true
+            sudo apt-get update -y
+            sudo apt-get install -y ca-certificates curl gnupg lsb-release git
+
+            # Add Docker GPG key
+            sudo mkdir -p /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+              gpg --dearmor --batch --yes --no-tty | \
+              sudo tee /etc/apt/keyrings/docker.gpg > /dev/null
+
+            # Add Docker's official APT repository
+            echo \
+              "deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+              https://download.docker.com/linux/ubuntu \$(lsb_release -cs) stable" | \
+              sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+            sudo apt-get update -y
+            sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+            sudo systemctl enable --now docker
+            sudo usermod -aG docker \$USER
+
+            # Clone or pull repo
+            REPO_NAME=$(basename "${{ github.repository }}")
             mkdir -p ~/abdelhamid
             cd ~/abdelhamid
-            git clone https://github.com/${{ github.repository }} || cd $(basename "${{ github.repository }}") && git pull
 
-            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} \
-              | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+            if [ ! -d "\$REPO_NAME/.git" ]; then
+              git clone https://github.com/${{ github.repository }} "\$REPO_NAME"
+            fi
 
-            cd $(basename "${{ github.repository }}")
+            cd "\$REPO_NAME"
+            git pull
+
+            # Login to ECR
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
+              docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+
+            # Update docker-compose.yml with ECR image
             sed -i "s|image:.*|image: $ECR_IMAGE|" docker-compose.yml
 
-            docker-compose down || true
-            docker-compose pull
-            docker-compose up -d
+            # Deploy
+            docker compose down --remove-orphans || true
+            docker compose pull
+            docker compose up -d
           EOF
