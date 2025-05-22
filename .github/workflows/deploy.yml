@@ -52,7 +52,7 @@ jobs:
           docker push $ECR_REGISTRY/$IMAGE_NAME:${{ env.TAG }}
           echo "ECR_IMAGE=$ECR_REGISTRY/$IMAGE_NAME:${{ env.TAG }}" >> $GITHUB_ENV
 
-     # remove from here if localhost
+     # remove from here to down if localhost
       - name: Setup SSH
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" | base64 -d > ec2_key.pem
