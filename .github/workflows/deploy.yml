@@ -44,12 +44,5 @@ jobs:
       - name: Build Docker image
         run: docker build -t ${{ env.IMAGE_NAME }}:${{ env.TAG }} .
 
-      - name: Tag and Push to ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |
-          docker tag $IMAGE_NAME:${{ env.TAG }} $ECR_REGISTRY/$IMAGE_NAME:${{ env.TAG }}
-          docker push $ECR_REGISTRY/$IMAGE_NAME:${{ env.TAG }}
-          echo "ECR_IMAGE=$ECR_REGISTRY/$IMAGE_NAME:${{ env.TAG }}" >> $GITHUB_ENV
 
       
