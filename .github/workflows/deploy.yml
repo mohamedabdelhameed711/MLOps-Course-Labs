@@ -136,70 +136,8 @@ jobs:
             aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
               docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
 
-            # Debug: Check current docker-compose.yml content
-            echo "=== Current docker-compose.yml content ==="
-            cat docker-compose.yml
-            echo "=== End of current content ==="
-            
-            # Create a backup of the original file
-            cp docker-compose.yml docker-compose.yml.backup
-            
-            # Update only the main application service image using more precise sed commands
-            echo "Attempting to update main service image..."
-            
-            # Try different common service names and update only that specific service
-            if grep -q "^[[:space:]]*fastapi:" docker-compose.yml; then
-                echo "Found fastapi service, updating its image..."
-                sed -i '/^[[:space:]]*fastapi:/,/^[[:space:]]*[^[:space:]]/ {
-                    /^[[:space:]]*image:/ s|image:.*|image: "'$ECR_IMAGE'"|
-                }' docker-compose.yml
-            elif grep -q "^[[:space:]]*app:" docker-compose.yml; then
-                echo "Found app service, updating its image..."
-                sed -i '/^[[:space:]]*app:/,/^[[:space:]]*[^[:space:]]/ {
-                    /^[[:space:]]*image:/ s|image:.*|image: "'$ECR_IMAGE'"|
-                }' docker-compose.yml
-            elif grep -q "^[[:space:]]*web:" docker-compose.yml; then
-                echo "Found web service, updating its image..."
-                sed -i '/^[[:space:]]*web:/,/^[[:space:]]*[^[:space:]]/ {
-                    /^[[:space:]]*image:/ s|image:.*|image: "'$ECR_IMAGE'"|
-                }' docker-compose.yml
-            elif grep -q "^[[:space:]]*api:" docker-compose.yml; then
-                echo "Found api service, updating its image..."
-                sed -i '/^[[:space:]]*api:/,/^[[:space:]]*[^[:space:]]/ {
-                    /^[[:space:]]*image:/ s|image:.*|image: "'$ECR_IMAGE'"|
-                }' docker-compose.yml
-            elif grep -q "^[[:space:]]*churn-prediction:" docker-compose.yml; then
-                echo "Found churn-prediction service, updating its image..."
-                sed -i '/^[[:space:]]*churn-prediction:/,/^[[:space:]]*[^[:space:]]/ {
-                    /^[[:space:]]*image:/ s|image:.*|image: "'$ECR_IMAGE'"|
-                }' docker-compose.yml
-            else
-                echo "No recognized main service found, updating first service with image..."
-                # Find the first service that has an image and update only that one
-                first_service=$(grep -E "^[[:space:]]*[a-zA-Z0-9_-]+:" docker-compose.yml | head -1 | sed 's/[[:space:]]*\([^:]*\):.*/\1/')
-                if [ ! -z "$first_service" ]; then
-                    echo "Updating first service: $first_service"
-                    sed -i "/^[[:space:]]*$first_service:/,/^[[:space:]]*[^[:space:]]/ {
-                        /^[[:space:]]*image:/ s|image:.*|image: \"$ECR_IMAGE\"|
-                    }" docker-compose.yml
-                fi
-            fi
-            
-            echo "=== Updated docker-compose.yml content ==="
-            cat docker-compose.yml
-            echo "=== End of updated content ==="
-            
-            # Validate the docker-compose.yml syntax
-            echo "Validating docker-compose.yml..."
-            if ! docker compose config >/dev/null 2>&1; then
-                echo "Docker-compose.yml validation failed, restoring backup..."
-                cp docker-compose.yml.backup docker-compose.yml
-                echo "Restored original docker-compose.yml"
-                echo "ERROR: Please check your docker-compose.yml structure manually"
-                exit 1
-            else
-                echo "docker-compose.yml validation successful!"
-            fi
+            # Update docker-compose.yml with ECR image
+            sed -i "s|image:.*|image: $ECR_IMAGE|" docker-compose.yml
 
             # Deploy with Docker Compose
             docker compose down --remove-orphans || true
