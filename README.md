@@ -127,6 +127,40 @@ CMD ["uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000"]
 docker-compose up --build
 ```
 
+### Docker Compose
+
+```yaml
+version: "3.8"
+
+services:
+  churn-api:
+    image: <your-ecr-url>/churn-prediction:your-tag
+    ports:
+      - "443:443"
+    restart: always
+```
+
+---
+
+## 🧪 GitHub Actions Workflow
+
+GitHub Actions will:
+
+1. Run unit tests.
+2. Build Docker image.
+3. Push it to ECR with tag `your-tag`.
+4. SSH into EC2 instance using a base64-encoded SSH key.
+5. Clone repo & run docker-compose.
+
+Make sure these secrets are added:
+
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `EC2_SSH_KEY` (base64 of PEM)
+- `EC2_PUBLIC_IP`
+- `ECR_REPOSITORY`
+- `ECR_REGION`
+
 ---
 
 ## 📊 Monitoring with Prometheus & Grafana
@@ -190,26 +224,23 @@ Instrumentator().instrument(app).expose(app)
 
 ---
 
-## 📁 Project Structure
+## 📁 Structure
 
 ```bash
 MLOps-Course-Labs/
 ├── api/
-│   ├── model.py
-│   └── app.py
-├── grafana/
-│   └── provisioning/
-│       ├── dashboards/
-│       │   └── dashboard.json
-│       └── datasources/
-├── tests/
-│   └── test_api.py
+│   ├── app.py
+│   └── model.py
 ├── models/
 │   └── gb_model.pkl
+├── tests/
+│   └── test_api.py
 ├── requirements.txt
 ├── Dockerfile
 ├── docker-compose.yml
-├── prometheus.yml
+└── .github/
+    └── workflows/
+        └── deploy.yml
 ```
 
 ---
