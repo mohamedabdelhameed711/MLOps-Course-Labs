@@ -42,8 +42,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Docker image
-        run: docker build -t ${{ env.IMAGE_NAME }}:abdelhamid590 -f ./Dockerfile .
-
+        run: docker build -t ${{ env.IMAGE_NAME }}:${{ env.TAG }} .
 
       - name: Tag and Push to ECR
         env:
