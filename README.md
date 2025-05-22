@@ -1,4 +1,4 @@
-# 🚀 Bank Customer Churn Prediction with Monitoring
+# 🚀 Bank Customer Churn Prediction 
 
 This project provides a FastAPI application serving a `GradientBoostingClassifier` model for **Bank Customer Churn Prediction**. It features **Docker**, **Prometheus**, and **Grafana** integration for robust monitoring.
 
