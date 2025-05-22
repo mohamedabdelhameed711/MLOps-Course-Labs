@@ -55,7 +55,8 @@ jobs:
      # remove from here to down if localhost
       - name: Setup SSH
         run: |
-          echo "${{ secrets.EC2_SSH_KEY }}" | base64 -d > ec2_key.pem
+          mkdir -p ~/.ssh
+          printf '%s' '${{ secrets.EC2_SSH_KEY }}' > ec2_key.pem
           chmod 400 ec2_key.pem
 
       - name: Deploy to EC2
