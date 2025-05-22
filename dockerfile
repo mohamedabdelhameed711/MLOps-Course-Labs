@@ -10,7 +10,7 @@ COPY . .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Expose port 8000  
+# Expose port 8000 local 
 EXPOSE 8000
 
 # Run FastAPI app with Uvicorn
