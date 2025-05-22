@@ -44,6 +44,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t $IMAGE_NAME:${{ env.TAG }} .
+          working-directory: ./
 
       - name: Tag and Push to ECR
         env:
